@@ -109,47 +109,58 @@ def solve():
     pass
 
 
-def nice_output_sol(sol):
+def nice_output_sol(sol, sol_books):
     output_file = "sol_{}".format(in_file)
     used_books = set()
     with open(output_file, "w") as fout:
         fout.write("{}\n".format(len(sol)))
-        for lib in sol:
-            aux = [x for x in libraries[lib][2] if x not in used_books]
-            for x in aux:
-                used_books.add(x)
-            fout.write("{} {}\n".format(lib, len(aux)))
-            fout.write("{}\n".format(" ".join([str(x) for x in aux])))
+        for idx, lib in enumerate(sol):
+            # aux = [x for x in libraries[lib][2] if x not in used_books]
+            # aux = sorted(aux, key= lambda x: book_scores[x], reverse=True)
+            # for x in aux:
+            #     used_books.add(x)
+            fout.write("{} {}\n".format(lib, len(sol_books[idx])))
+            fout.write("{}\n".format(" ".join([str(x) for x in sol_books[idx]])))
 
 
 def solve_greedy():
     current_time = 0
     sol = []
+    sol_books = []
     ignore_books = set()
+    used_libs = set()
     while current_time < days:
         best_score = -1
         best_lib = -1
+        best_sols = []
         for idx, lib in enumerate(libraries):
+            if idx in used_libs:
+                continue
             remaining_books = [b for b in lib[2] if b not in ignore_books]
             lst = sorted(remaining_books, key=lambda x: book_scores[x], reverse=True)
             remaining_time = days - current_time
             score = 0
             lst_idx = 0
+            sols = []
             while remaining_time > 0 and lst_idx < len(lst):
                 score += book_scores[lst[lst_idx]]
+                sols.append(lst[lst_idx])
                 lst_idx += 1
                 remaining_time -= lib[1]
             if score > best_score:
                 best_score = score
                 best_lib = idx
+                best_sols = sols
 
         # remove common books
         for book in libraries[best_lib][2]:
             ignore_books.add(book)
         sol.append(best_lib)
+        sol_books.append(best_sols)
+        used_libs.add(best_lib)
         current_time += libraries[best_lib][0]
         print(current_time)
-    nice_output_sol(sol)
+    nice_output_sol(sol, sol_books)
 
 
 def main():
